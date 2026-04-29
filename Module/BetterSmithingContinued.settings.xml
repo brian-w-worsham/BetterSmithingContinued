@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Better Smithing Continued mod settings.
+
+  UnlimitedCraftingStamina: When true (default), refining, smelting, and smithing
+    cost zero stamina, so heroes can craft as long as materials are available.
+
+  StaminaRecoveryMultiplierInTowns: Multiplier applied to the hourly smithing
+    stamina increase while the hero's party is inside a settlement.
+    1.0 = vanilla. Default 5.0. Must be >= 0.
+
+  StaminaRecoveryMultiplierOutsideTowns: Multiplier applied to the hourly
+    smithing stamina increase while the hero's party is in the wilderness.
+    1.0 = vanilla. Default 5.0. Must be >= 0.
+-->
+<BetterSmithingContinuedSettings>
+  <UnlimitedCraftingStamina>true</UnlimitedCraftingStamina>
+  <StaminaRecoveryMultiplierInTowns>5.0</StaminaRecoveryMultiplierInTowns>
+  <StaminaRecoveryMultiplierOutsideTowns>5.0</StaminaRecoveryMultiplierOutsideTowns>
+</BetterSmithingContinuedSettings>
