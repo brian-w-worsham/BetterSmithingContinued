@@ -120,17 +120,45 @@ namespace BetterSmithingContinued.Tests
         }
 
         [Fact]
-        public void All_PatchClasses_Target_DefaultSmithingModel()
+        public void EnergyCostPatches_Target_DefaultSmithingModel()
         {
             var expected = typeof(TaleWorlds.CampaignSystem.GameComponents.DefaultSmithingModel);
-            foreach (var t in typeof(SubModule).Assembly.GetTypes())
+            string[] energyPatchNames =
             {
+                "BetterSmithingContinued.Patches.RefiningEnergyCostPatch",
+                "BetterSmithingContinued.Patches.SmithingEnergyCostPatch",
+                "BetterSmithingContinued.Patches.SmeltingEnergyCostPatch",
+            };
+
+            foreach (string name in energyPatchNames)
+            {
+                var t = typeof(SubModule).Assembly.GetType(name);
+                Assert.NotNull(t);
                 var attr = t.GetCustomAttribute<HarmonyPatch>();
-                if (attr != null)
-                {
-                    Assert.Equal(expected, attr.info.declaringType);
-                }
+                Assert.NotNull(attr);
+                Assert.Equal(expected, attr.info.declaringType);
             }
+        }
+
+        [Fact]
+        public void StaminaRecoveryPatch_Targets_CraftingCampaignBehavior()
+        {
+            var t = typeof(SubModule).Assembly.GetType(
+                "BetterSmithingContinued.Patches.StaminaRecoveryPatch");
+            Assert.NotNull(t);
+            var attr = t.GetCustomAttribute<HarmonyPatch>();
+            Assert.NotNull(attr);
+            Assert.Equal(
+                typeof(TaleWorlds.CampaignSystem.CampaignBehaviors.CraftingCampaignBehavior),
+                attr.info.declaringType);
+        }
+
+        [Fact]
+        public void ApplyAllPatches_NullArgs_ReturnsEmptyList_NoThrow()
+        {
+            var failures = SubModule.ApplyAllPatches(null, null);
+            Assert.NotNull(failures);
+            Assert.Empty(failures);
         }
     }
 }

@@ -1,23 +1,31 @@
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.CampaignSystem.GameComponents;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Party;
 
 namespace BetterSmithingContinued.Patches
 {
     /// <summary>
-    /// Patches <see cref="DefaultSmithingModel.GetSmithingStaminaIncreasePerHour"/>
-    /// to multiply hourly smithing stamina recovery by the configured multiplier.
-    /// Uses the in-town multiplier when the hero's party is inside a settlement,
-    /// otherwise the wilderness multiplier.
+    /// Patches <see cref="CraftingCampaignBehavior"/>.<c>GetStaminaHourlyRecoveryRate</c>
+    /// (a private static method) to multiply hourly smithing stamina recovery
+    /// by the configured multiplier. Uses the in-town multiplier when the
+    /// hero's party is inside a settlement, otherwise the wilderness multiplier.
     /// </summary>
-    [HarmonyPatch(typeof(DefaultSmithingModel), "GetSmithingStaminaIncreasePerHour",
+    /// <remarks>
+    /// The current version of Bannerlord computes hourly recovery in
+    /// <c>CraftingCampaignBehavior.GetStaminaHourlyRecoveryRate(Hero)</c>, which
+    /// is invoked from <c>HourlyTick</c> for every hero with a crafting record.
+    /// Earlier Bannerlord versions exposed this on
+    /// <c>DefaultSmithingModel.GetSmithingStaminaIncreasePerHour</c>; that
+    /// member no longer exists and patching it now throws at load time.
+    /// </remarks>
+    [HarmonyPatch(typeof(CraftingCampaignBehavior), "GetStaminaHourlyRecoveryRate",
         new[] { typeof(Hero) })]
     internal static class StaminaRecoveryPatch
     {
         /// <param name="hero">The hero whose hourly stamina recovery is being computed.</param>
-        /// <param name="__result">Hourly stamina recovery returned by the original method; multiplied in place.</param>
-        internal static void Postfix(Hero hero, ref float __result)
+        /// <param name="__result">Hourly stamina recovery (int) returned by the original method; multiplied in place.</param>
+        internal static void Postfix(Hero hero, ref int __result)
         {
             float multiplier = ResolveMultiplier(hero, BetterSmithingSettings.Current);
             __result = ApplyMultiplier(__result, multiplier);
@@ -26,8 +34,7 @@ namespace BetterSmithingContinued.Patches
         /// <summary>
         /// Returns the recovery multiplier appropriate for the hero's current
         /// party location: in-town when their party is in a settlement, else
-        /// wilderness. Defaults to the wilderness multiplier when location
-        /// cannot be determined.
+        /// wilderness. Defaults to <c>1.0</c> when settings are unavailable.
         /// </summary>
         internal static float ResolveMultiplier(Hero hero, BetterSmithingSettings settings)
         {
@@ -44,9 +51,9 @@ namespace BetterSmithingContinued.Patches
 
         /// <summary>
         /// Applies the multiplier to the original recovery value, guarding
-        /// against negative results.
+        /// against negative results and invalid multipliers. Rounds to nearest int.
         /// </summary>
-        internal static float ApplyMultiplier(float originalRecovery, float multiplier)
+        internal static int ApplyMultiplier(int originalRecovery, float multiplier)
         {
             if (float.IsNaN(multiplier) || float.IsInfinity(multiplier) || multiplier < 0f)
             {
@@ -54,7 +61,12 @@ namespace BetterSmithingContinued.Patches
             }
 
             float scaled = originalRecovery * multiplier;
-            return scaled < 0f ? 0f : scaled;
+            if (scaled < 0f)
+            {
+                return 0;
+            }
+
+            return (int)System.Math.Round(scaled, System.MidpointRounding.AwayFromZero);
         }
 
         /// <summary>
