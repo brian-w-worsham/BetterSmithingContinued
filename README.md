@@ -2,7 +2,7 @@
 
 A Mount & Blade II: Bannerlord mod that removes the smithing stamina bottleneck so you can refine, smelt, and craft as long as your materials hold out — and recovers stamina faster when it does run down. Inspired by [Better Smithing Continued](https://www.nexusmods.com/mountandblade2bannerlord/mods/4318) by Aragas / OliverK / community contributors on Nexus Mods.
 
-> This is a lightweight, vanilla-only re-implementation focused on the gameplay tuning and naming-quality-of-life that the original mod provided. It does **not** ship the original mod's full UI overhaul — specifically: saved weapon designs, hotkey-driven batch refine/smelt/craft, character-cycle hotkeys, smart smelt-all, group-identical-crafted-weapons in inventory, in-game settings menu, or skill-icon coloring. Those features all require ButterLib + MCM + UIExtenderEx + custom Gauntlet XML, which this rewrite intentionally avoids. If you want them, install the original mod from Nexus alongside its `Bannerlord.Harmony` / `Bannerlord.ButterLib` / `Bannerlord.MBOptionScreen` dependencies.
+> This is a lightweight, vanilla-only re-implementation focused on the gameplay tuning, batch operations, and naming-quality-of-life that the original mod provided. It does **not** ship the original mod's full UI overhaul — specifically: saved weapon designs, smart smelt-all (skip non-crafted), group-identical-crafted-weapons in inventory, character-cycle hotkeys, in-game settings menu, or skill-icon coloring. Those features all require ButterLib + MCM + UIExtenderEx + custom Gauntlet XML, which this rewrite intentionally avoids. If you want them, install the original mod from Nexus alongside its `Bannerlord.Harmony` / `Bannerlord.ButterLib` / `Bannerlord.MBOptionScreen` dependencies.
 
 ## What it does
 
@@ -13,6 +13,7 @@ A Mount & Blade II: Bannerlord mod that removes the smithing stamina bottleneck 
 | Wilderness stamina recovery multiplier | **5×** | Multiplies the hourly recovery rate while travelling on the campaign map. `1.0` is vanilla. `0` disables wilderness recovery. |
 | Weapon tier prefixes | **On** | Player-crafted weapons display their quality word (Rusty / Dull / Balanced / Masterwork / Legendary) in inventory, the same way pre-tiered loot weapons do. Common-quality items are not renamed. |
 | Use own prefixes only | **Off** | When on, this mod's prefix words are always used. When off, the game's own modifier name is preferred and the mod's prefix is only used as a fallback when the game would render the bare item name. |
+| Batch refine / smelt / forge | **On** | Hold **Shift** (5 ops), **Ctrl** (10 ops), or **Ctrl+Shift** (unlimited — stops only when out of materials/stamina) while clicking the vanilla Refine, Smelt, or Forge button to repeat the action multiple times in one click. Counts are configurable. |
 
 All values are read at game launch from a plain XML file and clamped to safe ranges.
 
@@ -25,10 +26,11 @@ Uses [Harmony](https://github.com/pardeike/Harmony) runtime patching. Patches ar
 - `DefaultSmithingModel.GetEnergyCostForSmelting` — prefix that returns `0` when *Unlimited Crafting Stamina* is on.
 - `CraftingCampaignBehavior.GetStaminaHourlyRecoveryRate` — postfix that multiplies the original recovery rate by the configured in-town or wilderness multiplier (selected based on whether the hero's party currently sits in a settlement).
 - `EquipmentElement.GetModifiedItemName` — postfix that prepends a tier word to the displayed name of player-crafted weapons that have an applied modifier.
+- `CraftingCampaignBehavior.DoRefinement` / `DoSmelting` / `CreateCraftedWeaponInFreeBuildMode` — postfixes that, when Shift/Ctrl is held, repeat the action up to the configured count using the vanilla method itself (so any other mod's effects on the underlying call still apply per iteration). A re-entrancy guard prevents infinite loops, and each iteration checks materials/stamina before proceeding.
 
 No game files are modified. Patches are applied on load and reverted on unload.
 
-**Mod conflicts:** Any other mod patching `DefaultSmithingModel`, `CraftingCampaignBehavior.GetStaminaHourlyRecoveryRate`, or `EquipmentElement.GetModifiedItemName` (including the original Better Smithing Continued from Nexus) may conflict — pick one.
+**Mod conflicts:** Any other mod patching `DefaultSmithingModel`, `CraftingCampaignBehavior.GetStaminaHourlyRecoveryRate`, `CraftingCampaignBehavior.DoRefinement` / `DoSmelting` / `CreateCraftedWeaponInFreeBuildMode`, or `EquipmentElement.GetModifiedItemName` (including the original Better Smithing Continued from Nexus) may conflict — pick one.
 
 ## Requirements
 
@@ -60,12 +62,17 @@ Open `Modules\BetterSmithingContinued\BetterSmithingContinued.settings.xml` in a
   <StaminaRecoveryMultiplierOutsideTowns>5.0</StaminaRecoveryMultiplierOutsideTowns>
   <AddWeaponTierPrefixes>true</AddWeaponTierPrefixes>
   <UseOwnPrefixesOnly>false</UseOwnPrefixesOnly>
+  <BatchOperationsEnabled>true</BatchOperationsEnabled>
+  <ShiftMultiplier>5</ShiftMultiplier>
+  <CtrlMultiplier>10</CtrlMultiplier>
+  <CtrlShiftMultiplier>0</CtrlShiftMultiplier>
 </BetterSmithingContinuedSettings>
 ```
 
 - Change `UnlimitedCraftingStamina` to `false` to keep vanilla stamina costs but still benefit from the recovery multipliers.
 - Set the multipliers to `1.0` for vanilla rates, or `0` to disable that recovery channel entirely.
 - Toggle `AddWeaponTierPrefixes` off if you prefer the vanilla unprefixed crafted-weapon names.
+- Toggle `BatchOperationsEnabled` off to fully restore one-click-one-item smithing. The three multiplier values control how many total operations happen per click for Shift / Ctrl / Ctrl+Shift; setting any of them to `0` means "as many as possible" (capped at 1000 iterations).
 - Save the file and re-launch the game (settings are read once at startup).
 
 Invalid or unparseable values silently fall back to the defaults — the mod will not crash on a malformed file.
@@ -81,6 +88,7 @@ A quick verification checklist after enabling the mod:
 3. **Recovery multiplier** — Move the campaign clock forward by one hour (Space, or rest). Note the hero's stamina increase. With the default 5× multiplier the per-hour gain should be roughly **five times** vanilla. Toggle `UnlimitedCraftingStamina` off and set the multiplier to `1.0` to see vanilla recovery for comparison.
 4. **Toggle off** — Set `UnlimitedCraftingStamina=false`, restart the game, and confirm that performing a refine/smelt/forge action again drains stamina normally. This proves the patch is genuinely respecting the setting (rather than the bar simply being broken).
 5. **Tier prefixes** — Forge a weapon. Open the inventory and look at the new item: with `AddWeaponTierPrefixes=true` it should be listed as e.g. *Masterwork Long Sword* / *Balanced Two Handed Sword*. Common-quality crafts keep their bare name. Toggle the setting off and re-craft to compare.
+6. **Batch operations** — In a smithy, hold **Shift** while clicking *Refine* (or *Smelt* or *Forge*). The action should fire 5 times back-to-back with a single click and you should see a green message like `Better Smithing Continued: Refined 5 items.` in the message log. Hold **Ctrl** for 10. Hold **Ctrl+Shift** to repeat until materials/stamina run out. With `BatchOperationsEnabled=false` this hotkey behaviour is disabled and clicks behave vanilla.
 
 ## Build & test
 
@@ -111,11 +119,13 @@ BetterSmithingContinued/
 │   ├── BetterSmithingSettings.cs
 │   ├── SubModule.cs
 │   └── Patches/
+│       ├── BatchSmithingPatches.cs
 │       ├── StaminaRecoveryPatch.cs
 │       ├── UnlimitedStaminaPatches.cs
 │       └── WeaponTierPrefixPatch.cs
 └── tests/BetterSmithingContinued.Tests/
     ├── BetterSmithingContinued.Tests.csproj
+    ├── BatchSmithingPatchTests.cs
     ├── BetterSmithingSettingsTests.cs
     ├── StaminaRecoveryPatchTests.cs
     ├── SubModuleTests.cs

@@ -22,6 +22,18 @@
     even if the game itself supplied a modifier name. When false (default),
     the game's modifier name is preferred and this mod's prefix is only used
     as a fallback. Has no effect when AddWeaponTierPrefixes is false.
+
+  BatchOperationsEnabled: When true (default), holding Shift, Ctrl, or
+    Ctrl+Shift while clicking Refine / Smelt / Forge in the smithy repeats
+    the action up to the configured count. The loop stops automatically when
+    materials are gone (refine/smelt) or stamina runs out (when
+    UnlimitedCraftingStamina is false).
+
+  ShiftMultiplier:       Total ops to perform when Shift is held. Default 5.
+  CtrlMultiplier:        Total ops to perform when Ctrl is held. Default 10.
+  CtrlShiftMultiplier:   Total ops to perform when Ctrl+Shift is held.
+                         Default 0 = "as many as possible" (capped at 1000
+                         iterations as a safety ceiling).
 -->
 <BetterSmithingContinuedSettings>
   <UnlimitedCraftingStamina>true</UnlimitedCraftingStamina>
@@ -29,4 +41,8 @@
   <StaminaRecoveryMultiplierOutsideTowns>5.0</StaminaRecoveryMultiplierOutsideTowns>
   <AddWeaponTierPrefixes>true</AddWeaponTierPrefixes>
   <UseOwnPrefixesOnly>false</UseOwnPrefixesOnly>
+  <BatchOperationsEnabled>true</BatchOperationsEnabled>
+  <ShiftMultiplier>5</ShiftMultiplier>
+  <CtrlMultiplier>10</CtrlMultiplier>
+  <CtrlShiftMultiplier>0</CtrlShiftMultiplier>
 </BetterSmithingContinuedSettings>

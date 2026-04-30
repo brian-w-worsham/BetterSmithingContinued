@@ -22,6 +22,12 @@ namespace BetterSmithingContinued
         internal const bool DefaultAddWeaponTierPrefixes = true;
         internal const bool DefaultUseOwnPrefixesOnly = false;
 
+        internal const bool DefaultBatchOperationsEnabled = true;
+        internal const int DefaultShiftMultiplier = 5;
+        internal const int DefaultCtrlMultiplier = 10;
+        internal const int DefaultCtrlShiftMultiplier = 0; // 0 = unlimited (run until materials/stamina exhausted)
+        internal const int MaxBatchIterations = 1000;        // hard safety cap per single click
+
         /// <summary>The active settings instance loaded by <see cref="LoadFromDefaultPath"/>.</summary>
         internal static BetterSmithingSettings Current { get; private set; } = new BetterSmithingSettings();
 
@@ -49,6 +55,25 @@ namespace BetterSmithingContinued
         /// item name.
         /// </summary>
         public bool UseOwnPrefixesOnly { get; set; } = DefaultUseOwnPrefixesOnly;
+
+        /// <summary>
+        /// Master switch for the batch refine/smelt/craft feature.
+        /// When true, holding Shift, Ctrl, or both while clicking the
+        /// vanilla refine/smelt/craft button repeats the action multiple
+        /// times until the configured count is reached or materials/stamina
+        /// run out. When false, vanilla one-click-one-item behaviour is
+        /// preserved.
+        /// </summary>
+        public bool BatchOperationsEnabled { get; set; } = DefaultBatchOperationsEnabled;
+
+        /// <summary>How many total operations to perform when Shift is held.</summary>
+        public int ShiftMultiplier { get; set; } = DefaultShiftMultiplier;
+
+        /// <summary>How many total operations to perform when Ctrl is held.</summary>
+        public int CtrlMultiplier { get; set; } = DefaultCtrlMultiplier;
+
+        /// <summary>How many total operations to perform when Ctrl+Shift is held. Zero = unlimited.</summary>
+        public int CtrlShiftMultiplier { get; set; } = DefaultCtrlShiftMultiplier;
 
         /// <summary>
         /// Loads settings from the conventional path next to <c>SubModule.xml</c>.
@@ -99,6 +124,18 @@ namespace BetterSmithingContinued
                     UseOwnPrefixesOnly = ParseBool(
                         root?.Element(nameof(UseOwnPrefixesOnly))?.Value,
                         DefaultUseOwnPrefixesOnly),
+                    BatchOperationsEnabled = ParseBool(
+                        root?.Element(nameof(BatchOperationsEnabled))?.Value,
+                        DefaultBatchOperationsEnabled),
+                    ShiftMultiplier = ParseInt(
+                        root?.Element(nameof(ShiftMultiplier))?.Value,
+                        DefaultShiftMultiplier),
+                    CtrlMultiplier = ParseInt(
+                        root?.Element(nameof(CtrlMultiplier))?.Value,
+                        DefaultCtrlMultiplier),
+                    CtrlShiftMultiplier = ParseInt(
+                        root?.Element(nameof(CtrlShiftMultiplier))?.Value,
+                        DefaultCtrlShiftMultiplier),
                 };
             }
             catch
@@ -170,6 +207,21 @@ namespace BetterSmithingContinued
             }
 
             if (bool.TryParse(raw.Trim(), out bool parsed))
+            {
+                return parsed;
+            }
+
+            return fallback;
+        }
+
+        private static int ParseInt(string raw, int fallback)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return fallback;
+            }
+
+            if (int.TryParse(raw.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed) && parsed >= 0)
             {
                 return parsed;
             }

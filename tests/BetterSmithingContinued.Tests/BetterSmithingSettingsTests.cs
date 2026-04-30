@@ -21,6 +21,10 @@ namespace BetterSmithingContinued.Tests
             Assert.Equal(5.0f, settings.StaminaRecoveryMultiplierOutsideTowns);
             Assert.True(settings.AddWeaponTierPrefixes);
             Assert.False(settings.UseOwnPrefixesOnly);
+            Assert.True(settings.BatchOperationsEnabled);
+            Assert.Equal(5, settings.ShiftMultiplier);
+            Assert.Equal(10, settings.CtrlMultiplier);
+            Assert.Equal(0, settings.CtrlShiftMultiplier);
         }
 
         [Fact]
@@ -31,6 +35,10 @@ namespace BetterSmithingContinued.Tests
             Assert.Equal(5.0f, BetterSmithingSettings.DefaultStaminaRecoveryMultiplierOutsideTowns);
             Assert.True(BetterSmithingSettings.DefaultAddWeaponTierPrefixes);
             Assert.False(BetterSmithingSettings.DefaultUseOwnPrefixesOnly);
+            Assert.True(BetterSmithingSettings.DefaultBatchOperationsEnabled);
+            Assert.Equal(5, BetterSmithingSettings.DefaultShiftMultiplier);
+            Assert.Equal(10, BetterSmithingSettings.DefaultCtrlMultiplier);
+            Assert.Equal(0, BetterSmithingSettings.DefaultCtrlShiftMultiplier);
         }
 
         [Fact]

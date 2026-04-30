@@ -103,10 +103,13 @@ namespace BetterSmithingContinued.Tests
             Assert.NotNull(asm.GetType("BetterSmithingContinued.Patches.SmeltingEnergyCostPatch"));
             Assert.NotNull(asm.GetType("BetterSmithingContinued.Patches.StaminaRecoveryPatch"));
             Assert.NotNull(asm.GetType("BetterSmithingContinued.Patches.WeaponTierPrefixPatch"));
+            Assert.NotNull(asm.GetType("BetterSmithingContinued.Patches.BatchRefinePatch"));
+            Assert.NotNull(asm.GetType("BetterSmithingContinued.Patches.BatchSmeltPatch"));
+            Assert.NotNull(asm.GetType("BetterSmithingContinued.Patches.BatchCraftPatch"));
         }
 
         [Fact]
-        public void Assembly_Has_Exactly_FiveHarmonyPatchClasses()
+        public void Assembly_Has_Exactly_EightHarmonyPatchClasses()
         {
             int count = 0;
             foreach (var t in typeof(SubModule).Assembly.GetTypes())
@@ -117,7 +120,7 @@ namespace BetterSmithingContinued.Tests
                 }
             }
 
-            Assert.Equal(5, count);
+            Assert.Equal(8, count);
         }
 
         [Fact]
