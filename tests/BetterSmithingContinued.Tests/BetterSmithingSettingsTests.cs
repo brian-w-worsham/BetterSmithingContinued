@@ -19,6 +19,8 @@ namespace BetterSmithingContinued.Tests
             Assert.True(settings.UnlimitedCraftingStamina);
             Assert.Equal(5.0f, settings.StaminaRecoveryMultiplierInTowns);
             Assert.Equal(5.0f, settings.StaminaRecoveryMultiplierOutsideTowns);
+            Assert.True(settings.AddWeaponTierPrefixes);
+            Assert.False(settings.UseOwnPrefixesOnly);
         }
 
         [Fact]
@@ -27,6 +29,8 @@ namespace BetterSmithingContinued.Tests
             Assert.True(BetterSmithingSettings.DefaultUnlimitedCraftingStamina);
             Assert.Equal(5.0f, BetterSmithingSettings.DefaultStaminaRecoveryMultiplierInTowns);
             Assert.Equal(5.0f, BetterSmithingSettings.DefaultStaminaRecoveryMultiplierOutsideTowns);
+            Assert.True(BetterSmithingSettings.DefaultAddWeaponTierPrefixes);
+            Assert.False(BetterSmithingSettings.DefaultUseOwnPrefixesOnly);
         }
 
         [Fact]

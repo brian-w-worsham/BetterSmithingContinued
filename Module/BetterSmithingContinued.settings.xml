@@ -12,9 +12,21 @@
   StaminaRecoveryMultiplierOutsideTowns: Multiplier applied to the hourly
     smithing stamina increase while the hero's party is in the wilderness.
     1.0 = vanilla. Default 5.0. Must be >= 0.
+
+  AddWeaponTierPrefixes: When true (default), player-crafted weapons that have
+    a quality modifier are renamed in inventory to include their tier word
+    (Rusty / Dull / Balanced / Masterwork / Legendary), the same way pre-tiered
+    loot weapons display.
+
+  UseOwnPrefixesOnly: When true, this mod's own English prefix words are used
+    even if the game itself supplied a modifier name. When false (default),
+    the game's modifier name is preferred and this mod's prefix is only used
+    as a fallback. Has no effect when AddWeaponTierPrefixes is false.
 -->
 <BetterSmithingContinuedSettings>
   <UnlimitedCraftingStamina>true</UnlimitedCraftingStamina>
   <StaminaRecoveryMultiplierInTowns>5.0</StaminaRecoveryMultiplierInTowns>
   <StaminaRecoveryMultiplierOutsideTowns>5.0</StaminaRecoveryMultiplierOutsideTowns>
+  <AddWeaponTierPrefixes>true</AddWeaponTierPrefixes>
+  <UseOwnPrefixesOnly>false</UseOwnPrefixesOnly>
 </BetterSmithingContinuedSettings>

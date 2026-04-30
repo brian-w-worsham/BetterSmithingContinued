@@ -19,6 +19,8 @@ namespace BetterSmithingContinued
         internal const bool DefaultUnlimitedCraftingStamina = true;
         internal const float DefaultStaminaRecoveryMultiplierInTowns = 5.0f;
         internal const float DefaultStaminaRecoveryMultiplierOutsideTowns = 5.0f;
+        internal const bool DefaultAddWeaponTierPrefixes = true;
+        internal const bool DefaultUseOwnPrefixesOnly = false;
 
         /// <summary>The active settings instance loaded by <see cref="LoadFromDefaultPath"/>.</summary>
         internal static BetterSmithingSettings Current { get; private set; } = new BetterSmithingSettings();
@@ -31,6 +33,22 @@ namespace BetterSmithingContinued
 
         /// <summary>Multiplier applied to hourly smithing stamina recovery while in the wilderness.</summary>
         public float StaminaRecoveryMultiplierOutsideTowns { get; set; } = DefaultStaminaRecoveryMultiplierOutsideTowns;
+
+        /// <summary>
+        /// When true, prepends a tier word (Rusty/Dull/Balanced/Masterwork/Legendary)
+        /// to the displayed name of player-crafted weapons that have an
+        /// <see cref="TaleWorlds.Core.ItemModifier"/> applied.
+        /// </summary>
+        public bool AddWeaponTierPrefixes { get; set; } = DefaultAddWeaponTierPrefixes;
+
+        /// <summary>
+        /// When true, the modifier name supplied by the game is ignored and
+        /// this mod's own prefix words are always used. When false, the
+        /// game's modifier name is preferred and this mod's prefix is only
+        /// used when the modifier name would render identically to the bare
+        /// item name.
+        /// </summary>
+        public bool UseOwnPrefixesOnly { get; set; } = DefaultUseOwnPrefixesOnly;
 
         /// <summary>
         /// Loads settings from the conventional path next to <c>SubModule.xml</c>.
@@ -75,6 +93,12 @@ namespace BetterSmithingContinued
                     StaminaRecoveryMultiplierOutsideTowns = ParseMultiplier(
                         root?.Element(nameof(StaminaRecoveryMultiplierOutsideTowns))?.Value,
                         DefaultStaminaRecoveryMultiplierOutsideTowns),
+                    AddWeaponTierPrefixes = ParseBool(
+                        root?.Element(nameof(AddWeaponTierPrefixes))?.Value,
+                        DefaultAddWeaponTierPrefixes),
+                    UseOwnPrefixesOnly = ParseBool(
+                        root?.Element(nameof(UseOwnPrefixesOnly))?.Value,
+                        DefaultUseOwnPrefixesOnly),
                 };
             }
             catch
